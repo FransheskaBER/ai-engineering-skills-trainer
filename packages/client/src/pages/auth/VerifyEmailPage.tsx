@@ -41,13 +41,13 @@ const VerifyEmailPage = () => {
         };
         // eslint-disable-next-line no-console
         console.error('Verify email failed:', err, context);
-        Sentry.captureException(toSentryError(err, 'verify email failed'), {
-          extra: { ...context, originalError: err },
-        });
         if (!cancelled) {
           if (code === 'CONFLICT') {
             setState('already-verified');
           } else {
+            Sentry.captureException(toSentryError(err, 'verify email failed'), {
+              extra: { ...context, originalError: err },
+            });
             setState('error');
           }
         }

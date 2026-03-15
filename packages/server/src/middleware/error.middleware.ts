@@ -30,7 +30,7 @@ const isExpectedAuthError = (err: AppError, routePath: string): boolean => {
   // Validation errors on auth routes
   if (err instanceof ValidationError && isAuthRoute(routePath)) return true;
   // Duplicate email on signup
-  if (err instanceof ConflictError && routePath === '/api/auth/signup') return true;
+  if (err instanceof ConflictError && isAuthRoute(routePath)) return true;
   // Bad request on auth routes (invalid/expired verification/reset links)
   if (err instanceof BadRequestError && isAuthRoute(routePath)) return true;
 

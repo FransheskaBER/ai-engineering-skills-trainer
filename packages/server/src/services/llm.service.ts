@@ -358,6 +358,7 @@ export const streamQuestions = async (
       'LLM stream request failed during quiz generation',
     );
     captureExceptionOnce(err, {
+      level: 'warning',
       extra: { provider: 'anthropic', model: LLM_MODEL, operation: 'streamQuestions' },
     });
 
