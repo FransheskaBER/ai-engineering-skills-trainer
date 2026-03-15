@@ -25,12 +25,31 @@ describe('VerifyEmailPage telemetry (FE-008)', () => {
     mockVerifyEmail.mockReset();
     mockCaptureException.mockReset();
     mockParseApiError.mockReset();
-    mockParseApiError.mockReturnValue({ code: 'CONFLICT', message: 'Conflict' });
   });
 
-  it('captures verification failures with token-safe context and outcome branch', async () => {
+  it('does not report to Sentry when email is already verified', async () => {
+    mockParseApiError.mockReturnValue({ code: 'CONFLICT', message: 'Conflict' });
     mockVerifyEmail.mockReturnValue({
       unwrap: vi.fn().mockRejectedValue(new Error('verify failed')),
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/verify-email?token=test-token']}>
+        <Routes>
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(mockCaptureException).not.toHaveBeenCalled();
+    });
+  });
+
+  it('reports unexpected verification errors to Sentry', async () => {
+    mockParseApiError.mockReturnValue({ code: 'INTERNAL_ERROR', message: 'Server error' });
+    mockVerifyEmail.mockReturnValue({
+      unwrap: vi.fn().mockRejectedValue(new Error('server error')),
     });
 
     render(
@@ -49,7 +68,7 @@ describe('VerifyEmailPage telemetry (FE-008)', () => {
             operation: 'verifyEmail',
             route: '/verify-email',
             hasToken: true,
-            outcomeBranch: 'already-verified',
+            outcomeBranch: 'error',
           }),
         }),
       );
