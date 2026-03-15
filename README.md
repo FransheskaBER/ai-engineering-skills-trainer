@@ -12,18 +12,19 @@ LeetCode trains code *writing*. Modern technical interviews increasingly test so
 
 ## Exercise Types
 
-Quizzly generates six types of critical evaluation exercises — not recall, not definitions:
+Quizzly generates seven types of critical evaluation exercises — not recall, not definitions:
 
 | # | Type | What the student does |
 |---|------|-----------------------|
-| 1 | **Spot the Bug** | Identify and explain a realistic bug in a code snippet |
-| 2 | **Evaluate AI Output** | Critically review AI-generated code for correctness, edge cases, and performance |
-| 3 | **Compare Approaches** | Justify which of two implementations is better and why (complexity, trade-offs) |
-| 4 | **Choose the Right Tool** | Select the correct algorithm or data structure for a given constraint, with justification |
-| 5 | **Architectural Trade-Off** | Reason about weaknesses in a system design and make justified decisions |
-| 6 | **AI-Collaboration** | Use an AI tool to solve a problem, then evaluate the output for correctness, optimality, and production-readiness |
+| 1 | **Spot the Bug** | Find bugs, anti-patterns, and security issues in code |
+| 2 | **Evaluate AI Output** | Review prompt + AI code. Find what the AI got wrong. |
+| 3 | **Compare Approaches** | Which solution is better and why? |
+| 4 | **Choose the Right Tool** | Pick the best data structure or pattern for a given constraint |
+| 5 | **Architectural Trade-Off** | Reason about system design decisions |
+| 6 | **AI-Collaboration** | Use AI, then evaluate its work for correctness, optimality, and production-readiness |
+| 7 | **Prompt Construction** | Write the prompt you'd give an AI to build it right |
 
-Difficulty controls which types are used and how deep the reasoning must go — not just how long the question is.
+Difficulty controls which types are used and how deep the reasoning must go.
 
 ---
 
@@ -38,7 +39,7 @@ Difficulty controls which types are used and how deep the reasoning must go — 
 | **ORM** | Prisma + PostgreSQL 17 | Type-safe queries derived from schema. Strong migration tooling. Neon for serverless prod, Docker for local. |
 | **LLM** | Claude Sonnet 4 via `@anthropic-ai/sdk` | Best quality/speed/cost balance for structured JSON output. Opus is too slow; Haiku lacks multi-step reasoning. |
 | **File Storage** | AWS S3 + presigned URLs | Files go browser → S3 directly. The server never touches file bytes. |
-| **Auth** | Self-managed JWT + bcryptjs | Auth0/Clerk is overkill for an email/password MVP. ~12 lines of code vs. a vendor dependency and SDK surface area. |
+| **Auth** | JWT (access + refresh) in httpOnly cookies + bcryptjs | Short-lived access token (15 min) + rotating refresh token (7 days) in httpOnly cookies. No tokens in localStorage or response bodies. |
 | **Email** | Resend | Simple REST API, 100 emails/day free, near-instant delivery for verification flows. |
 | **Hosting** | Render ($7/mo backend + free static frontend) | Auto-deploys from `main`. Avoids cold starts on the paid tier. |
 | **Error tracking** | Sentry (free tier) | Frontend + backend crash reporting with source maps. |
@@ -130,7 +131,7 @@ docker-compose up -d
 cp .env.example packages/server/.env
 
 # Fill packages/server/.env with your local values:
-# DATABASE_URL, JWT_SECRET, API_KEY_ENCRYPTION_KEY
+# DATABASE_URL, JWT_SECRET, REFRESH_SECRET, API_KEY_ENCRYPTION_KEY
 # and optionally ANTHROPIC_API_KEY, RESEND_API_KEY, AWS_* vars, S3_BUCKET_NAME
 
 # Run migrations and generate Prisma client
@@ -190,8 +191,8 @@ All variables from `.env.example` (copy to `packages/server/.env`). Keep `.env.e
 | `PORT` | Server listen port | No | Local `.env` / runtime |
 | `CLIENT_URL` | CORS origin for frontend | No | Local `.env` / runtime |
 | `DATABASE_URL` | Postgres connection string | Yes | Local `.env` and CI secret |
-| `JWT_SECRET` | Signing key for JWT (min 32 chars) | Yes | Local `.env` and CI secret |
-| `JWT_EXPIRES_IN` | Token expiry | No | Local `.env` / runtime |
+| `JWT_SECRET` | Signing key for access tokens (min 32 chars) | Yes | Local `.env` and CI secret |
+| `REFRESH_SECRET` | Signing key for refresh tokens (min 32 chars) | Yes | Local `.env` and CI secret |
 | `AWS_ACCESS_KEY_ID` | AWS credentials for S3 | For S3 uploads | Local `.env` / CI secret |
 | `AWS_SECRET_ACCESS_KEY` | AWS credentials for S3 | For S3 uploads | Local `.env` / CI secret |
 | `AWS_REGION` | AWS region | For S3 uploads | Local `.env` / runtime |
@@ -210,7 +211,7 @@ All variables from `.env.example` (copy to `packages/server/.env`). Keep `.env.e
 
 Set these GitHub Actions repository secrets before enabling CI:
 
-- Required: `DATABASE_URL`, `JWT_SECRET`, `API_KEY_ENCRYPTION_KEY`
+- Required: `DATABASE_URL`, `JWT_SECRET`, `REFRESH_SECRET`, `API_KEY_ENCRYPTION_KEY`
 - Optional (only if relevant jobs/features need them): `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `S3_BUCKET_NAME`, `SENTRY_DSN`
 
 Enable local secret scanning before commit:
@@ -280,14 +281,21 @@ Users control three inputs that are injected into LLM prompts: session subject, 
 
 ---
 
-## What I'd Do Differently / Next Steps
+## What's Next
 
-**Immediate next steps (already scoped in the backlog):**
-- 5 Playwright E2E tests covering the full auth → generate → grade path
-- Prompt iteration: 50+ manually reviewed questions across all difficulty levels before launch
-- Production domain + Resend verified sending domain
+**For users:**
+- Performance tracking — see which topics you struggle with
+- Interview simulation — questions based on what companies actually ask right now
+- Google login — sign up in one click
 
-**What I'd change if starting over:**
-- **Refresh tokens from the start.** A 7-day JWT expiry is an acceptable trade-off for a 30-user MVP, but a user mid-quiz shouldn't get logged out. A short-lived access token + long-lived refresh token is the right default — the complexity is low and it's painful to add later without breaking existing sessions.
-- **Google OAuth from day one.** The schema already has `google_id` and `auth_provider` stubbed for future use. Email verification reduces signup friction, but OAuth reduces it more. The schema decision was right; deferring the implementation was a trade-off I'd reconsider.
-- **Expose the token budget in the UI.** Validating upload token counts at ingest time (rather than at generation time) was the right call — it surfaces the problem early and keeps generation fast. But users who hit the 150K-token limit get an error message with no visual sense of how close they are to the ceiling. A budget meter on the materials panel would eliminate that confusion.
+**For bootcamps & institutions:**
+- Students upload course materials → get personalized evaluation exercises
+- Instructors see which concepts students struggle with
+- The course teaches coding. Quizzly teaches the thinking that comes after.
+
+---
+
+## What I'd Do Differently
+
+- **Google login from day one.** The database is already prepared for it. I just didn't wire it up. One less password to remember means more people actually sign up.
+- **Store exercise types for smarter grading.** The AI generates 7 different exercise types but only stores "multiple choice" or "free text." The grader has to guess the type from the question text. Fixing this requires changes across 6 layers of the app — I scoped the full refactor but chose to defer it.
