@@ -114,7 +114,7 @@ The code parses out only the `<questions>` block. Analysis is discarded. Same pa
 PROMPT ASSEMBLY (at quiz generation time)
 ├── SYSTEM PROMPT (code-controlled, never user-editable)
 │   ├── Role definition (Quizzly — critical evaluation exercise generator)
-│   ├── Exercise type taxonomy (6 types — see below)
+│   ├── Exercise type taxonomy (7 types — see below)
 │   ├── Output format: strict JSON schema
 │   ├── Quality rules (subject adherence, goal alignment, no recall/trivia)
 │   └── Difficulty calibration (Easy/Medium/Hard — each difficulty prompt
@@ -136,12 +136,13 @@ PROMPT ASSEMBLY (at quiz generation time)
 
 | # | Type | Description | Difficulty Focus |
 |---|------|-------------|-----------------|
-| 1 | SPOT THE BUG | Code snippet with realistic bug; student identifies and explains | Easy, Medium |
-| 2 | EVALUATE AI OUTPUT | AI-generated code; student critically reviews for correctness, edge cases, performance | Easy, Medium |
+| 1 | SPOT THE BUG | Find bugs, anti-patterns, and security issues in code | Easy, Medium |
+| 2 | EVALUATE AI OUTPUT | Review prompt + AI code; find what the AI got wrong — edge cases, silent failures, incorrect assumptions | Easy, Medium |
 | 3 | COMPARE APPROACHES | Two implementations; student justifies which is better and why | Medium |
 | 4 | CHOOSE THE RIGHT TOOL | Scenario/constraint; student selects algorithm or data structure with trade-off justification | Medium |
 | 5 | ARCHITECTURAL TRADE-OFF | System design problem; student reasons about weaknesses and decisions | Hard |
 | 6 | AI-COLLABORATION | Student uses AI tool, then evaluates output for correctness, optimality, production-readiness (always free_text) | Hard |
+| 7 | PROMPT CONSTRUCTION | Write the prompt you'd give an AI to build it right; tests anticipation of edge cases and constraints | Hard |
 
 Prompt templates live in `src/prompts/` as TypeScript files. Version-controlled, reviewed, deployed with the app. NOT stored in database.
 

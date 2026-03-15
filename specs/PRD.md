@@ -255,21 +255,22 @@ The MVP consists of 7 user stories that deliver the complete core loop: create a
 
 **Difficulty Level Definitions (LLM Prompt Spec)**
 
-Quizzly generates six exercise types. Difficulty controls which types are used and how deep the reasoning must go.
+Quizzly generates seven exercise types. Difficulty controls which types are used and how deep the reasoning must go.
 
 **Exercise Types:**
-1. **SPOT THE BUG** — A code snippet with a realistic bug. Student identifies and explains the issue.
-2. **EVALUATE AI OUTPUT** — Code described as AI-generated. Student critically reviews it for correctness, edge cases, performance, and style.
+1. **SPOT THE BUG** — Find bugs, anti-patterns, and security issues in code.
+2. **EVALUATE AI OUTPUT** — Review prompt + AI code. Find what the AI got wrong — missing edge cases, silent failures, incorrect assumptions.
 3. **COMPARE APPROACHES** — Two or more implementations. Student justifies which is better and why (time/space complexity, readability, maintainability).
 4. **CHOOSE THE RIGHT TOOL** — A scenario or constraint. Student selects the correct algorithm, data structure, or pattern with explicit trade-off justification.
 5. **ARCHITECTURAL TRADE-OFF** — A system design problem or partial architecture. Student reasons about weaknesses and design decisions.
 6. **AI-COLLABORATION** — Student uses an AI tool (Claude, Cursor) to solve a problem, then evaluates whether the output is correct, optimal, and production-ready. Always free-text.
+7. **PROMPT CONSTRUCTION** — Write the prompt you'd give an AI coding assistant to implement something correctly. Tests whether you anticipate edge cases, constraints, and what the AI would miss without explicit instruction.
 
 **Easy — Focused Evaluation:** Primary types: SPOT THE BUG and EVALUATE AI OUTPUT. Contained, single-concept scenarios — bugs are visible to someone who has studied the material for 30 minutes (off-by-one, wrong method, missing null check). No multi-concept synthesis required.
 
 **Medium — Applied Analysis:** Primary types: COMPARE APPROACHES and CHOOSE THE RIGHT TOOL, with some SPOT THE BUG (subtle bugs). Student must reason about time/space complexity and trade-offs, not just identify syntax. May require using AI tools to explore an approach and then evaluate the result.
 
-**Hard — System-Level Thinking:** Primary types: ARCHITECTURAL TRADE-OFF and AI-COLLABORATION. Multi-step problems requiring synthesis across concepts. No single correct answer — student must justify decisions with explicit reasoning about constraints, trade-offs, scalability, and production-readiness.
+**Hard — System-Level Thinking:** Primary types: ARCHITECTURAL TRADE-OFF, AI-COLLABORATION, and PROMPT CONSTRUCTION. Multi-step problems requiring synthesis across concepts. No single correct answer — student must justify decisions with explicit reasoning about constraints, trade-offs, scalability, and production-readiness.
 
 ## **Story 5: Generate Critical Evaluation Exercises**
 
@@ -279,7 +280,7 @@ Quizzly generates six exercise types. Difficulty controls which types are used a
 
 * Exercises generated based on uploaded materials, session context (subject, goal), and quiz preferences (format, difficulty, count)
 
-* Question types include: spot the bug, evaluate AI-generated code, identify better approaches (time/space complexity), choose the right data structure, architectural trade-off analysis, and “use AI then evaluate the output” prompts
+* Question types include: spot the bug, evaluate AI-generated code, identify better approaches (time/space complexity), choose the right data structure, architectural trade-off analysis, “use AI then evaluate the output” prompts, and prompt construction
 
 * Question type mix is determined by difficulty level (Easy skews toward focused evaluation, Hard skews toward system design)
 
