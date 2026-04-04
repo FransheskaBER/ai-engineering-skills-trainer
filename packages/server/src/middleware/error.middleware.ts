@@ -18,7 +18,7 @@ const logger = pino({ name: 'error-handler' });
 const isAuthRoute = (routePath: string): boolean =>
   routePath.startsWith('/api/auth/');
 
-const isExpectedAuthError = (err: AppError, routePath: string): boolean => {
+const isExpectedError = (err: AppError, routePath: string): boolean => {
   // Failed login attempt (wrong email/password)
   if (err instanceof UnauthorizedError && err.message === 'Invalid email or password' && routePath === '/api/auth/login') return true;
   // Unauthenticated session check
@@ -33,6 +33,8 @@ const isExpectedAuthError = (err: AppError, routePath: string): boolean => {
   if (err instanceof ConflictError && isAuthRoute(routePath)) return true;
   // Bad request on auth routes (invalid/expired verification/reset links)
   if (err instanceof BadRequestError && isAuthRoute(routePath)) return true;
+  // Quiz validation — user submitted without answering all questions
+  if (err instanceof BadRequestError && err.message === 'All questions must be answered before submitting') return true;
 
   return false;
 };
@@ -57,7 +59,7 @@ export const errorHandler = (
   if (err instanceof AppError) {
     logger.warn({ err, ...requestContext }, 'Handled application error');
     const routePath = req.originalUrl?.split('?')[0] ?? req.path;
-    if (!isExpectedAuthError(err, routePath)) {
+    if (!isExpectedError(err, routePath)) {
       Sentry.captureException(err, {
         extra: {
           ...requestContext,
