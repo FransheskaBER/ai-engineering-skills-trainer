@@ -9,6 +9,11 @@ Sentry.init({
   environment: env.NODE_ENV,
   enabled: !!env.SENTRY_DSN && !['test', 'development'].includes(env.NODE_ENV),
   sendDefaultPii: true,
+  beforeSend(event) {
+    const url = event.request?.url ?? '';
+    if (url.includes('/api/health')) return null;
+    return event;
+  },
 });
 
 export { Sentry };
