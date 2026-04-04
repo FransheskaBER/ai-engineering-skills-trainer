@@ -207,17 +207,22 @@ const QuizTakingPage = () => {
         } else {
           // eslint-disable-next-line no-console
           console.error('Quiz submit failed:', err);
-          Sentry.captureException(toSentryError(err, 'quiz submit failed'), {
-            extra: {
-              operation: 'submitQuiz',
-              stage: 'submit',
-              quizId: id,
-              sessionId: quiz.sessionId,
-              originalError: err,
-            },
-          });
           const { code } = parseApiError(err);
           const status = extractHttpStatus(err);
+
+          // Only report unexpected errors to Sentry — 400s are expected validation
+          if (status !== 400) {
+            Sentry.captureException(toSentryError(err, 'quiz submit failed'), {
+              extra: {
+                operation: 'submitQuiz',
+                stage: 'submit',
+                quizId: id,
+                sessionId: quiz.sessionId,
+                originalError: err,
+              },
+            });
+          }
+
           const userMessage = getUserMessage(code, 'submit-quiz', status);
           showError(userMessage.title, userMessage.description);
           dispatch(
